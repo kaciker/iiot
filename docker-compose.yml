@@ -18,7 +18,7 @@ services:
     links:
       - influxdb
     volumes:
-      -  $PWD/docker/telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+      -  $PWD/telegraf.conf:/etc/telegraf/telegraf.conf:ro
      # - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
   grafana:
     image: grafana/grafana:7.3.7     
