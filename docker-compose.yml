@@ -1,10 +1,9 @@
 version: '2'
 
 services:
-
   influxdb:
     image: influxdb:latest  
-    container_name: influxdb
+    container_name: Influxdb
     ports:
       - "8086:8086"
     env_file:
@@ -14,7 +13,7 @@ services:
 
   telegraf:
     image: telegraf:latest   
-    container_name: telegraf
+    container_name: Telegraf
     links:
       - influxdb
     volumes:
@@ -22,7 +21,7 @@ services:
      # - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
   grafana:
     image: grafana/grafana:7.3.7     
-    container_name: grafana
+    container_name: Grafana
     ports:
       - "3000:3000"
     env_file:
@@ -56,14 +55,15 @@ services:
     ports:
       - "1880:1880"
     volumes:
-      - $PWD/docker/nodered/node-red-data:/data
-
-
+     # - $PWD/docker/nodered/node-red-data:/data
+      - node-red-data:/data
+    networks:
+      - node-red-net
 
 
   heimdall:
     image: ghcr.io/linuxserver/heimdall
-    container_name: heimdall
+    container_name: Heimdall
     environment:
       - PUID=1000
       - PGID=1000
@@ -74,6 +74,48 @@ services:
       - 8500:80
       - 6443:443
 
+  NPM:
+    image: jc21/nginx-proxy-manager:latest
+    restart: always
+    container_name: Nginx_PM
+    ports:
+      - '80:80'
+      - '81:81'
+      - '443:443'
+    environment:
+      DB_MYSQL_HOST: "db"
+      DB_MYSQL_PORT: 3306
+      DB_MYSQL_USER: "npm"
+      DB_MYSQL_PASSWORD: "npm"
+      DB_MYSQL_NAME: "npm"
+    volumes:
+      - ./data:/data
+      - ./letsencrypt:/etc/letsencrypt
+      
+        
+
+  db:
+    image: jc21/mariadb-aria:latest
+    container_name: MariaDB
+    restart: always    
+    environment:
+      MYSQL_ROOT_PASSWORD: 'npm'
+      MYSQL_DATABASE: 'npm'
+      MYSQL_USER: 'npm'
+      MYSQL_PASSWORD: 'npm'
+    volumes:
+      - $PWD/mariadb/docker/mysql:/var/lib/mysql     
+    
+  adminer:
+    image: adminer:latest
+    container_name: AdminerDB
+    restart: always
+    ports:
+      - 7777:8080
+
+
+networks:
+  node-red-net:
 
 
 volumes:
@@ -81,4 +123,4 @@ volumes:
   data_grafana:
   telegraf.conf:
   portainer_data:
- 
+  node-red-data:
